@@ -6,6 +6,11 @@ build:
     dockerfile: Dockerfile
     secrets:
       ssh: ssh_key
+  gh-token:
+    context: .
+    dockerfile: Dockerfiletoken
+    secrets:
+      _env: .env
 
 
 deploy:
