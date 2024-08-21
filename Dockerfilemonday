@@ -1,0 +1,23 @@
+FROM dapulse/golang:1.22.5-stable as builder
+
+WORKDIR /app
+COPY . .
+
+
+# Declare the private dependency for golang
+RUN go env -w GOPRIVATE=github.com/mnevadom/go-private
+
+RUN whoami
+
+RUN --mount=type=secret,id=_env,dst=/.env,uid=10001 \
+set -a && . /.env&&set +a&&\
+git config --global url."https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/".insteadOf "https://github.com/"&& go mod download && go mod verify
+
+RUN go build -o -buildvcs=false /usr/local/bin/hello-world
+
+FROM golang:1.17-buster
+
+COPY --from=builder /usr/local/bin/hello-world /usr/local/bin/hello-world
+
+EXPOSE 8080
+CMD ["/usr/local/bin/hello-world"]
